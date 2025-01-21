@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: user-service
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  datasource:
+    url: jdbc:postgresql://localhost:5432/autoecole
+    username: postgres
+    password: root
+    driver-class-name: org.postgresql.Driver
+
+server:
+  port: 3001
