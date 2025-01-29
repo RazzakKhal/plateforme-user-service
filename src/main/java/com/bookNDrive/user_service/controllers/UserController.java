@@ -4,13 +4,11 @@ import com.bookNDrive.user_service.models.User;
 import com.bookNDrive.user_service.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/users")
+@CrossOrigin(origins = "http://localhost:4200")
 public class UserController {
 
     private final UserService userService;
@@ -25,8 +23,8 @@ public class UserController {
         return ResponseEntity.ok(userService.getUser());
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<User> createUser(){
-        return ResponseEntity.ok(userService.createUser());
+    @PostMapping("/signup")
+    public ResponseEntity<User> createUser(@RequestBody User user){
+        return ResponseEntity.ok(userService.createUser(user));
     }
 }

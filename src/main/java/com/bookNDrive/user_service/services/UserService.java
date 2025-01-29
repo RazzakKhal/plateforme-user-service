@@ -20,12 +20,8 @@ public class UserService {
        return user;
     }
 
-    public User createUser(){
-        var user = new User();
-        user.setFirstname("razzak");
-        user.setLastname("khalfallah");
-        user.setMail("test@gmail.com");
-        user.setPassword("1234");
+    public User createUser(User user){
+        // faire mapping entre Dto et vrai User
 
         return userRepository.save(user);
     }
