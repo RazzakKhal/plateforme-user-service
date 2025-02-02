@@ -19,15 +19,14 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: build and test and generate converage
-        working-directory: back
+      - name: build and test and generate coverage
         run: mvn clean install
 
       - name: Upload Jacoco Report
         uses: actions/upload-artifact@v4
         with:
           name: jacoco-report
-          path: ./back/target/site/jacoco
+          path: ./target/site/jacoco
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
@@ -35,7 +34,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-          projectBaseDir: back
+          projectBaseDir: .
           args: >
             -Dsonar.java.binaries=target/classes
             -Dsonar.projectKey=RazzakKhal_plateforme-user-service
