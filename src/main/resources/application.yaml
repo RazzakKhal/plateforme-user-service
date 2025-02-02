@@ -10,9 +10,9 @@ spring:
       ddl-auto: update
     show-sql: true
   datasource:
-    url: jdbc:postgresql://localhost:5432/autoecole
-    username: postgres
-    password: root
+    url: ${SPRING_DATASOURCE_URL_USER_SERVICE:jdbc:postgresql://localhost:5432/autoecole}
+    username: ${SPRING_POSTGRES_USERNAME_:postgres}
+    password: ${SPRING_POSTGRES_PASSWORD:root}
     driver-class-name: org.postgresql.Driver
 
 server:
