@@ -2,6 +2,7 @@ spring:
   application:
     name: user-service
   jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     properties:
       hibernate:
         format_sql: true
