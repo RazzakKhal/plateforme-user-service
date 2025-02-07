@@ -1,4 +1,9 @@
 spring:
+  config:
+    import: "optional:configserver:http://localhost:8071/"
+  profiles:
+    active:
+      - "prod"
   application:
     name: user-service
   jpa:
