@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,9 +16,13 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/users")
 @CrossOrigin(origins = "http://localhost:4200")
 @Tag(name="User Controller", description = "controller en charge de l'inscription et la connexion")
+@RefreshScope
 public class UserController {
 
     private final UserService userService;
+
+    @Value("${test}")
+    String testo;
 
     @Autowired
     public UserController(UserService userService){
@@ -39,5 +45,10 @@ public class UserController {
     @PostMapping("/signup")
     public ResponseEntity<User> createUser(@RequestBody User user){
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(user));
+    }
+
+    @GetMapping("/myenv")
+    public String getEnv(){
+        return testo;
     }
 }
