@@ -1,5 +1,6 @@
 package com.bookNDrive.user_service.controllers;
 
+import com.bookNDrive.user_service.dtos.LoginDto;
 import com.bookNDrive.user_service.models.User;
 import com.bookNDrive.user_service.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,6 +33,19 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity<User> getUser(){
         return ResponseEntity.ok(userService.getUser());
+    }
+
+    @Operation(
+            summary = "Connexion d'un utilisateur",
+            description = "Connexion d'un utilisateur à partir de ses informations de connexion"
+    )
+    @ApiResponse(
+            responseCode = "201",
+            description = "Utilisateur correctement connecté"
+    )
+    @PostMapping("signin")
+    public ResponseEntity<User> login(@RequestBody LoginDto loginDto){
+        return ResponseEntity.ok(userService.login(loginDto));
     }
 
     @Operation(
