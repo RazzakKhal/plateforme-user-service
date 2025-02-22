@@ -39,6 +39,17 @@ management:
   endpoint:
     shutdown:
       access: unrestricted
+  health:
+    probes:
+      enabled: true
+    readinessstate:
+      enabled: true
+    livenessstate:
+      enabled: true
+    endpoint:
+      health:
+        probes:
+          enabled: true
 
 
 eureka:
