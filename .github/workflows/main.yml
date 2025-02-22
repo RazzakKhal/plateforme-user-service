@@ -28,18 +28,6 @@ jobs:
           name: jacoco-report
           path: ./target/site/jacoco
 
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          projectBaseDir: .
-          args: >
-            -Dsonar.java.binaries=target/classes
-            -Dsonar.projectKey=RazzakKhal_plateforme-user-service
-            -Dsonar.organization=razzakkhal
-
 
       - name: Login to Docker Hub
         uses: docker/login-action@v2
