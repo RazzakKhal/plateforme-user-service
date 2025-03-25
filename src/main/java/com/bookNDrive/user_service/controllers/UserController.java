@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/users")
 @CrossOrigin(origins = "http://localhost:4200")
@@ -27,6 +29,7 @@ public class UserController {
 
     @Autowired
     public UserController(UserService userService){
+
         this.userService = userService;
     }
 
@@ -43,8 +46,8 @@ public class UserController {
             responseCode = "201",
             description = "Utilisateur correctement connecté"
     )
-    @PostMapping("signin")
-    public ResponseEntity<User> login(@RequestBody LoginDto loginDto){
+    @PostMapping("/signin")
+    public ResponseEntity<Map<String,String>> login(@RequestBody LoginDto loginDto){
         return ResponseEntity.ok(userService.login(loginDto));
     }
 
@@ -59,6 +62,19 @@ public class UserController {
     @PostMapping("/signup")
     public ResponseEntity<User> createUser(@RequestBody User user){
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(user));
+    }
+
+    @Operation(
+            summary = "Valide le token d'un utilisateur",
+            description = "Valide un token d'authentification fourni dans le header Authorization"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "Utilisateur correctement authentifié"
+    )
+    @GetMapping("/validate")
+    public ResponseEntity<Map<String, String>> validateToken(@RequestHeader("Authorization") String token){
+        return ResponseEntity.ok(userService.validateToken(token));
     }
 
     @GetMapping("/myenv")

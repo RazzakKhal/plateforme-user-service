@@ -6,6 +6,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -15,7 +20,7 @@ import lombok.EqualsAndHashCode;
         name = "userDto",
         description = "il faudra un userdto pour requestbody et un autre pour le retour"
 )
-public class User extends BaseEntity{
+public class User extends BaseEntity implements UserDetails {
 
     @Schema(
             name = "firstname",
@@ -41,4 +46,15 @@ public class User extends BaseEntity{
             example = "razztiti20"
     )
     private String password;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
+    }
+
+    @Override
+    public String getUsername() {
+        return this.getMail();
+    }
+
 }
