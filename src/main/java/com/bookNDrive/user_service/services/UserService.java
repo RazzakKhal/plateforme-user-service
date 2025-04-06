@@ -5,12 +5,10 @@ import com.bookNDrive.user_service.models.User;
 import com.bookNDrive.user_service.repositories.UserRepository;
 import com.bookNDrive.user_service.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -28,9 +26,16 @@ public class UserService {
         this.jwtUtil = jwtUtil;
     }
 
-    public User getUser() {
-        var user = userRepository.findByMail("test@gmail.com").orElseThrow();
-        return user;
+    public User getUser(Authentication authentication) {
+        Optional<User> optUser = userRepository.findByMail(((User) authentication.getPrincipal()).getMail());
+        if(optUser.isPresent()){
+            User user = optUser.get();
+
+            return user;
+
+        }else{
+            throw new RuntimeException("l'utilisateur ne semble pas exister en BDD");
+        }
     }
 
     public User createUser(User user) {
@@ -47,7 +52,6 @@ public class UserService {
     }
 
     public Map<String, String> validateToken(String token) {
-        System.out.println(token);
         String jwt = token.replace("Bearer", "").trim();
         String mail = jwtUtil.extractUsername(jwt);
         Optional<User> userOptional = userRepository.findByMail(mail);

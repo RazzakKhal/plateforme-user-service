@@ -11,13 +11,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
-@CrossOrigin(origins = "http://localhost:4200")
 @Tag(name="User Controller", description = "controller en charge de l'inscription et la connexion")
 @RefreshScope
 public class UserController {
@@ -34,8 +34,8 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<User> getUser(){
-        return ResponseEntity.ok(userService.getUser());
+    public ResponseEntity<User> getUser(Authentication authentication){
+        return ResponseEntity.ok(userService.getUser(authentication));
     }
 
     @Operation(
