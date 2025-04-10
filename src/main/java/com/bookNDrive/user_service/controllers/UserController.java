@@ -60,7 +60,7 @@ public class UserController {
             description = "Utilisateur correctement créé"
     )
     @PostMapping("/signup")
-    public ResponseEntity<User> createUser(@RequestBody User user){
+    public ResponseEntity<Map<String, String>> createUser(@RequestBody User user){
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(user));
     }
 

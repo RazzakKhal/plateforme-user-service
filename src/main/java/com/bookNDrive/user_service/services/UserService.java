@@ -38,10 +38,11 @@ public class UserService {
         }
     }
 
-    public User createUser(User user) {
+    public Map<String, String> createUser(User userDto) {
         // faire mapping entre Dto et vrai User
-
-        return userRepository.save(user);
+        var user = userRepository.save(userDto);
+        String token = jwtUtil.generateToken(user);
+        return Map.of("token", token, "username", user.getMail(), "roles", user.getAuthorities().toString());
 
     }
 
