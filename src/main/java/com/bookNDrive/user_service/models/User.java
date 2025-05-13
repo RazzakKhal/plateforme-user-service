@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -20,6 +21,7 @@ import java.util.List;
         name = "userDto",
         description = "il faudra un userdto pour requestbody et un autre pour le retour"
 )
+@NoArgsConstructor
 public class User extends BaseEntity implements UserDetails {
 
     @Schema(
@@ -46,6 +48,12 @@ public class User extends BaseEntity implements UserDetails {
             example = "razztiti20"
     )
     private String password;
+
+    @Schema(
+            name = "formulaId",
+            example = "123456"
+    )
+    private Long formulaId;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
