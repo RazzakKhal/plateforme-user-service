@@ -12,6 +12,7 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -34,7 +35,8 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<User> getUser(Authentication authentication){
+    public ResponseEntity<User> getUser(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return ResponseEntity.ok(userService.getUser(authentication));
     }
 
