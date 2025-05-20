@@ -1,9 +1,13 @@
 package com.bookNDrive.user_service.services;
 
-import com.bookNDrive.user_service.dtos.LoginDto;
+import com.bookNDrive.user_service.dtos.received.LoginDto;
+import com.bookNDrive.user_service.dtos.received.SubscriptionDto;
+import com.bookNDrive.user_service.dtos.sended.UserDto;
+import com.bookNDrive.user_service.mappers.UserMapper;
 import com.bookNDrive.user_service.models.User;
 import com.bookNDrive.user_service.repositories.UserRepository;
 import com.bookNDrive.user_service.security.JwtUtil;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,28 +23,33 @@ public class UserService {
 
     private final JwtUtil jwtUtil;
 
+    private final UserMapper userMapper;
+
     @Autowired
-    public UserService(UserRepository userRepository, JwtUtil jwtUtil) {
+    public UserService(UserRepository userRepository, JwtUtil jwtUtil, UserMapper userMapper) {
 
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
+        this.userMapper = userMapper;
     }
 
-    public User getUser(Authentication authentication) {
+    @Transactional
+    public UserDto getUser(Authentication authentication) {
         Optional<User> optUser = userRepository.findByMail(((User) authentication.getPrincipal()).getMail());
         if(optUser.isPresent()){
             User user = optUser.get();
-
-            return user;
+            user.getAdress().getAdressLine1();
+            return userMapper.userToUserDto(user);
 
         }else{
             throw new RuntimeException("l'utilisateur ne semble pas exister en BDD");
         }
     }
 
-    public Map<String, String> createUser(User userDto) {
+    public Map<String, String> createUser(SubscriptionDto subscriptionDto) {
         // faire mapping entre Dto et vrai User
-        var user = userRepository.save(userDto);
+
+        var user = userRepository.save(userMapper.subscriptionDtoToUser(subscriptionDto));
         String token = jwtUtil.generateToken(user);
         return Map.of("token", token, "username", user.getMail(), "roles", user.getAuthorities().toString());
 

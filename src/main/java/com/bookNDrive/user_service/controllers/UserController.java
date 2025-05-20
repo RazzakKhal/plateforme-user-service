@@ -1,6 +1,8 @@
 package com.bookNDrive.user_service.controllers;
 
-import com.bookNDrive.user_service.dtos.LoginDto;
+import com.bookNDrive.user_service.dtos.received.LoginDto;
+import com.bookNDrive.user_service.dtos.received.SubscriptionDto;
+import com.bookNDrive.user_service.dtos.sended.UserDto;
 import com.bookNDrive.user_service.models.User;
 import com.bookNDrive.user_service.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,7 +37,7 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<User> getUser(){
+    public ResponseEntity<UserDto> getUser(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return ResponseEntity.ok(userService.getUser(authentication));
     }
@@ -62,8 +64,8 @@ public class UserController {
             description = "Utilisateur correctement créé"
     )
     @PostMapping("/signup")
-    public ResponseEntity<Map<String, String>> createUser(@RequestBody User user){
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(user));
+    public ResponseEntity<Map<String, String>> createUser(@RequestBody SubscriptionDto subscriptionDto){
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(subscriptionDto));
     }
 
     @Operation(

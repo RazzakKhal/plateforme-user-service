@@ -65,6 +65,10 @@ public class User extends BaseEntity implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Set<Role> roles = new HashSet<>();
 
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "adress_id")
+    private Adress adress;
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
