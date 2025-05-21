@@ -55,6 +55,12 @@ public class User extends BaseEntity implements UserDetails {
     private String password;
 
     @Schema(
+            name = "phone",
+            example = "0668696068"
+    )
+    private String phone;
+
+    @Schema(
             name = "formulaId",
             example = "123456"
     )

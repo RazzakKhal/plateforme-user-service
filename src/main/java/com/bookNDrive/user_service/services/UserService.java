@@ -47,7 +47,6 @@ public class UserService {
     }
 
     public Map<String, String> createUser(SubscriptionDto subscriptionDto) {
-        // faire mapping entre Dto et vrai User
 
         var user = userRepository.save(userMapper.subscriptionDtoToUser(subscriptionDto));
         String token = jwtUtil.generateToken(user);

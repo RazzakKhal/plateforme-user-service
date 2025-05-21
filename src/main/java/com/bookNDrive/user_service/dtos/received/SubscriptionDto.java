@@ -9,6 +9,7 @@ public class SubscriptionDto {
     private String lastname;
     private String mail;
     private String password;
+    private String phone;
     private AddressDto address;
 
 

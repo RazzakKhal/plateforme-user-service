@@ -65,6 +65,7 @@ public class UserController {
     )
     @PostMapping("/signup")
     public ResponseEntity<Map<String, String>> createUser(@RequestBody SubscriptionDto subscriptionDto){
+        System.out.println("le subscriptiondto : " + subscriptionDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(subscriptionDto));
     }
 
