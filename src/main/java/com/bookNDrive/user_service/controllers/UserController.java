@@ -82,6 +82,12 @@ public class UserController {
         return ResponseEntity.ok(userService.validateToken(token));
     }
 
+    @PatchMapping("/formula")
+    public ResponseEntity<Void> updateUserFormula(@RequestParam Long formulaId) {
+        userService.updateUserFormula(formulaId);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/myenv")
     public String getEnv(){
         return testo;

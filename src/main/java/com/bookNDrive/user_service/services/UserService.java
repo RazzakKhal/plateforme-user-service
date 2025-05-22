@@ -10,6 +10,7 @@ import com.bookNDrive.user_service.security.JwtUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -74,5 +75,14 @@ public class UserService {
         }
 
         throw new RuntimeException("token is not valid");
+    }
+
+    public void updateUserFormula(Long formulaId) {
+        var principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        User user = (User) principal;
+        System.out.println("le user : " + user);
+        user.setFormulaId(formulaId);
+        userRepository.save(user);
     }
 }
