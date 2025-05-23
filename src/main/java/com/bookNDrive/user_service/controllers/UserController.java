@@ -82,7 +82,7 @@ public class UserController {
         return ResponseEntity.ok(userService.validateToken(token));
     }
 
-    @PatchMapping("/formula")
+    @PutMapping("/formula")
     public ResponseEntity<Void> updateUserFormula(@RequestParam Long formulaId) {
         userService.updateUserFormula(formulaId);
         return ResponseEntity.noContent().build();
