@@ -1,6 +1,8 @@
 package com.bookNDrive.user_service.controllers;
 
-import com.bookNDrive.user_service.dtos.LoginDto;
+import com.bookNDrive.user_service.dtos.received.LoginDto;
+import com.bookNDrive.user_service.dtos.received.SubscriptionDto;
+import com.bookNDrive.user_service.dtos.sended.UserDto;
 import com.bookNDrive.user_service.models.User;
 import com.bookNDrive.user_service.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,6 +14,7 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -34,7 +37,8 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<User> getUser(Authentication authentication){
+    public ResponseEntity<UserDto> getUser(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return ResponseEntity.ok(userService.getUser(authentication));
     }
 
@@ -60,8 +64,9 @@ public class UserController {
             description = "Utilisateur correctement créé"
     )
     @PostMapping("/signup")
-    public ResponseEntity<Map<String, String>> createUser(@RequestBody User user){
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(user));
+    public ResponseEntity<Map<String, String>> createUser(@RequestBody SubscriptionDto subscriptionDto){
+        System.out.println("le subscriptiondto : " + subscriptionDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(subscriptionDto));
     }
 
     @Operation(
@@ -75,6 +80,12 @@ public class UserController {
     @GetMapping("/validate")
     public ResponseEntity<Map<String, String>> validateToken(@RequestHeader("Authorization") String token){
         return ResponseEntity.ok(userService.validateToken(token));
+    }
+
+    @PatchMapping("/formula")
+    public ResponseEntity<Void> updateUserFormula(@RequestParam Long formulaId) {
+        userService.updateUserFormula(formulaId);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/myenv")

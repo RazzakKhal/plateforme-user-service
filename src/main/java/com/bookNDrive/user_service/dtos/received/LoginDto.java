@@ -1,4 +1,4 @@
-package com.bookNDrive.user_service.dtos;
+package com.bookNDrive.user_service.dtos.received;
 
 import lombok.Data;
 
