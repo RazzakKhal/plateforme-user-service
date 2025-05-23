@@ -21,6 +21,7 @@ public interface UserMapper {
     Adress toAdress(AddressDto dto);
 
     @Mapping(source = "adress", target = "address")
+    @Mapping(target = "id", ignore = false) // facultatif aussi
     UserDto userToUserDto(User user);
 
 }
