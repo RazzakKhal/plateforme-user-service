@@ -1,4 +1,17 @@
 spring:
+  cloud:
+    function:
+      definition: saveFormula
+    stream:
+      defaultBinder: kafka
+      kafka:
+        binder:
+          brokers:
+            - localhost:29092
+      bindings:
+        saveFormula-in-0:
+          destination: send-communication
+          group: test
   rabbitmq:
     host: "localhost"
     port: 5672

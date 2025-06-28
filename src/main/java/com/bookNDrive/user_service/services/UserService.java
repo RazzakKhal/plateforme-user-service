@@ -1,6 +1,7 @@
 package com.bookNDrive.user_service.services;
 
 import com.bookNDrive.user_service.dtos.received.LoginDto;
+import com.bookNDrive.user_service.dtos.received.PaymentDto;
 import com.bookNDrive.user_service.dtos.received.SubscriptionDto;
 import com.bookNDrive.user_service.dtos.sended.UserDto;
 import com.bookNDrive.user_service.mappers.UserMapper;
@@ -83,6 +84,13 @@ public class UserService {
         User user = (User) principal;
         System.out.println("le user : " + user);
         user.setFormulaId(formulaId);
+        userRepository.save(user);
+    }
+
+    public void insertFormulaFromKafka(PaymentDto paymentDto) {
+
+        var user = userRepository.findById(paymentDto.getUserId()).orElseThrow(() -> new RuntimeException("Aucun utilisateur trouvé par l'id donné via kafka"));
+        user.setFormulaId(paymentDto.getFormulaId());
         userRepository.save(user);
     }
 }
