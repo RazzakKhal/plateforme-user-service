@@ -7,7 +7,7 @@ spring:
       kafka:
         binder:
           brokers:
-            - localhost:29092
+            - ${SPRING_KAFKA:localhost:29092}
       bindings:
         saveFormula-in-0:
           destination: send-communication
