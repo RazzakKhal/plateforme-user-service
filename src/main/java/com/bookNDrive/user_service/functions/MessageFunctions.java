@@ -14,4 +14,5 @@ public class MessageFunctions {
     public Consumer<PaymentDto> saveFormula(UserService userService){
         return userService::insertFormulaFromKafka;
     }
+
 }

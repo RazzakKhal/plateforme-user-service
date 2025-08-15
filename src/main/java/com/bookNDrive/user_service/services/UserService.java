@@ -58,6 +58,7 @@ public class UserService {
 
     public Map<String, String> login(LoginDto loginDto) {
         var user = userRepository.findByMail(loginDto.getMail()).orElseThrow(() -> new RuntimeException("Email non existant en BDD"));
+        // mettre les mdp hashé en bdd + verification de ceux ci
         String token = jwtUtil.generateToken(user);
         return Map.of("token", token, "username", user.getMail(), "roles", user.getAuthorities().toString());
     }

@@ -11,7 +11,11 @@ spring:
       bindings:
         saveFormula-in-0:
           destination: send-communication
-          group: test
+          group: test# ⬇️ Producer pour le reset password
+
+        send-forgot-password-link-out-0:
+          destination: password-reset-requested   # nom du topic Kafka
+          contentType: application/json
   rabbitmq:
     host: "localhost"
     port: 5672
