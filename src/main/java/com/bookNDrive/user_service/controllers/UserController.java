@@ -44,32 +44,6 @@ public class UserController {
         return ResponseEntity.ok(userService.getUser(authentication));
     }
 
-    @Operation(
-            summary = "Connexion d'un utilisateur",
-            description = "Connexion d'un utilisateur à partir de ses informations de connexion"
-    )
-    @ApiResponse(
-            responseCode = "201",
-            description = "Utilisateur correctement connecté"
-    )
-    @PostMapping("/signin")
-    public ResponseEntity<Map<String,String>> login(@RequestBody LoginDto loginDto){
-        return ResponseEntity.ok(userService.login(loginDto));
-    }
-
-    @Operation(
-            summary = "Création d'un utilisateur",
-            description = "Création d'un utilisateur qu'on aura fourni dans le body"
-    )
-    @ApiResponse(
-            responseCode = "201",
-            description = "Utilisateur correctement créé"
-    )
-    @PostMapping("/signup")
-    public ResponseEntity<Map<String, String>> createUser(@RequestBody SubscriptionDto subscriptionDto){
-        System.out.println("le subscriptiondto : " + subscriptionDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(subscriptionDto));
-    }
 
     @Operation(
             summary = "Valide le token d'un utilisateur",

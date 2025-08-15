@@ -48,20 +48,6 @@ public class UserService {
         }
     }
 
-    public Map<String, String> createUser(SubscriptionDto subscriptionDto) {
-
-        var user = userRepository.save(userMapper.subscriptionDtoToUser(subscriptionDto));
-        String token = jwtUtil.generateToken(user);
-        return Map.of("token", token, "username", user.getMail(), "roles", user.getAuthorities().toString());
-
-    }
-
-    public Map<String, String> login(LoginDto loginDto) {
-        var user = userRepository.findByMail(loginDto.getMail()).orElseThrow(() -> new RuntimeException("Email non existant en BDD"));
-        // mettre les mdp hashé en bdd + verification de ceux ci
-        String token = jwtUtil.generateToken(user);
-        return Map.of("token", token, "username", user.getMail(), "roles", user.getAuthorities().toString());
-    }
 
     public Map<String, String> validateToken(String token) {
         String jwt = token.replace("Bearer", "").trim();

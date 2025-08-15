@@ -1,9 +1,13 @@
 package com.bookNDrive.user_service.services;
 
+import com.bookNDrive.user_service.dtos.received.LoginDto;
 import com.bookNDrive.user_service.dtos.received.ResetPasswordConfirmDto;
+import com.bookNDrive.user_service.dtos.received.SubscriptionDto;
 import com.bookNDrive.user_service.dtos.sended.ForgotPasswordToken;
 import com.bookNDrive.user_service.dtos.sended.TokenDto;
+import com.bookNDrive.user_service.handlers.PasswordHandler;
 import com.bookNDrive.user_service.interfaces.AuthService;
+import com.bookNDrive.user_service.mappers.UserMapper;
 import com.bookNDrive.user_service.models.User;
 import com.bookNDrive.user_service.repositories.UserRepository;
 import com.bookNDrive.user_service.security.JwtUtil;
@@ -11,18 +15,24 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
 @Service
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
     private final KafkaService kafkaService;
+    private final UserMapper userMapper;
+    private final PasswordHandler passwordHandler;
 
     @Autowired
-    public AuthServiceImpl(UserRepository userRepository, JwtUtil jwtUtil, KafkaService kafkaService){
+    public AuthServiceImpl(UserRepository userRepository, JwtUtil jwtUtil, KafkaService kafkaService, UserMapper userMapper, PasswordHandler passwordHandler){
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
         this.kafkaService = kafkaService;
+        this.userMapper = userMapper;
+        this.passwordHandler = passwordHandler;
     }
 
 
@@ -43,10 +53,34 @@ public class AuthServiceImpl implements AuthService {
                 jwtUtil.extractUsername(resetPasswordConfirmDto.token())
         ).orElseThrow(() -> new RuntimeException("utilisateur non trouvé lors de la réinitialisation"));
 
-        user.setPassword(resetPasswordConfirmDto.password());
+        user.setPassword(passwordHandler.encodePassword(resetPasswordConfirmDto.password()));
         userRepository.save(user);
 
-        return new TokenDto(jwtUtil.generateToken(user));
+        return new TokenDto(user.getMail(), user.getAuthorities().toString(), jwtUtil.generateToken(user));
 
     }
+
+    @Override
+    @Transactional
+    public TokenDto createUser(SubscriptionDto subscriptionDto) {
+
+        subscriptionDto.setPassword(passwordHandler.encodePassword(subscriptionDto.getPassword()));
+        var user = userRepository.save(userMapper.subscriptionDtoToUser(subscriptionDto));
+        String token = jwtUtil.generateToken(user);
+        return new TokenDto(user.getMail(), user.getAuthorities().toString(), token);
+
+    }
+
+    @Override
+    @Transactional
+    public TokenDto login(LoginDto loginDto) {
+        var user = userRepository.findByMail(loginDto.getMail()).orElseThrow(() -> new RuntimeException("Email non existant en BDD"));
+        if(!passwordHandler.verifyPassword(loginDto.getPassword(), user.getPassword())){
+            throw new RuntimeException("Connexion impossible, veuillez réessayer");
+        }
+        String token = jwtUtil.generateToken(user);
+        return new TokenDto(user.getMail(), user.getAuthorities().toString(), token);
+    }
+
+
 }
