@@ -7,6 +7,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -23,7 +24,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/users/signup", "/users/signin", "/users/validate", "/actuator/**", "/auth/forgot-password/**").permitAll()
+                        .requestMatchers("/auth/signup", "/auth/signin", "/users/validate", "/actuator/**", "/auth/forgot-password/**", "/auth/reset-password/**").permitAll()
                         .anyRequest().authenticated()
 
                 )
@@ -32,5 +33,10 @@ public class SecurityConfig {
                 .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public BCryptPasswordEncoder bCryptPasswordEncoder(){
+        return new BCryptPasswordEncoder();
     }
 }
