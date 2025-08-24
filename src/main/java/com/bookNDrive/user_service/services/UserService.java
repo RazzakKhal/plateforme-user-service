@@ -1,15 +1,15 @@
 package com.bookNDrive.user_service.services;
 
-import com.bookNDrive.user_service.dtos.received.LoginDto;
 import com.bookNDrive.user_service.dtos.received.PaymentDto;
-import com.bookNDrive.user_service.dtos.received.SubscriptionDto;
 import com.bookNDrive.user_service.dtos.sended.UserDto;
+import com.bookNDrive.user_service.exceptions.EntityNotFoundException;
 import com.bookNDrive.user_service.mappers.UserMapper;
 import com.bookNDrive.user_service.models.User;
 import com.bookNDrive.user_service.repositories.UserRepository;
 import com.bookNDrive.user_service.security.JwtUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -37,15 +37,9 @@ public class UserService {
 
     @Transactional
     public UserDto getUser(Authentication authentication) {
-        Optional<User> optUser = userRepository.findByMail(((User) authentication.getPrincipal()).getMail());
-        if(optUser.isPresent()){
-            User user = optUser.get();
-            user.getAdress().getAdressLine1();
-            return userMapper.userToUserDto(user);
-
-        }else{
-            throw new RuntimeException("l'utilisateur ne semble pas exister en BDD");
-        }
+        var user = userRepository.findByMail(((User) authentication.getPrincipal()).getMail()).orElseThrow(() -> new EntityNotFoundException("Ce mail ne correspond à aucun compte existant", "USER_NOT_FOUND", HttpStatus.NOT_FOUND));
+        user.getAdress().getAdressLine1();
+        return userMapper.userToUserDto(user);
     }
 
 
@@ -58,25 +52,26 @@ public class UserService {
         if (userOptional.isPresent()) {
             User user = userOptional.get();
             if (jwtUtil.validateToken(jwt, (UserDetails) user)) {
-               return Map.of("mail", mail, "roles", user.getAuthorities().toString());
+                return Map.of("mail", mail, "roles", user.getAuthorities().toString());
             }
         }
 
         throw new RuntimeException("token is not valid");
     }
 
+    @Transactional
     public void updateUserFormula(Long formulaId) {
         var principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         User user = (User) principal;
-        System.out.println("le user : " + user);
         user.setFormulaId(formulaId);
         userRepository.save(user);
     }
 
+    @Transactional
     public void insertFormulaFromKafka(PaymentDto paymentDto) {
 
-        var user = userRepository.findById(paymentDto.getUserId()).orElseThrow(() -> new RuntimeException("Aucun utilisateur trouvé par l'id donné via kafka"));
+        var user = userRepository.findById(paymentDto.getUserId()).orElseThrow(() -> new EntityNotFoundException("Cet id ne correspond à aucun compte existant", "USER_NOT_FOUND", HttpStatus.NOT_FOUND));
         user.setFormulaId(paymentDto.getFormulaId());
         userRepository.save(user);
     }
