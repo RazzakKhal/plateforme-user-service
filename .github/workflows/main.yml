@@ -11,6 +11,8 @@ jobs:
     permissions:
       contents: read
       packages: read
+    env:
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_READ_TOKEN }}
 
     steps:
       - name: Checkout code
@@ -71,9 +73,6 @@ jobs:
             </activeProfiles>
           </settings>
           EOF
-        env:
-          GITHUB_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_READ_TOKEN }}
-
       - name: build and test and generate coverage
         run: mvn clean install
 
