@@ -12,15 +12,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-
 @RequestMapping("/auth")
 @RestController
 public class AuthController {
 
     private final AuthService authService;
 
-    public AuthController(AuthService authService){
+    public AuthController(AuthService authService) {
         this.authService = authService;
     }
 
@@ -33,7 +31,7 @@ public class AuthController {
             description = "Utilisateur correctement connecté"
     )
     @PostMapping("/signin")
-    public ResponseEntity<TokenDto> login(@RequestBody LoginDto loginDto){
+    public ResponseEntity<TokenDto> login(@RequestBody LoginDto loginDto) {
         return ResponseEntity.ok(authService.login(loginDto));
     }
 
@@ -46,19 +44,18 @@ public class AuthController {
             description = "Utilisateur correctement créé"
     )
     @PostMapping("/signup")
-    public ResponseEntity<TokenDto> createUser(@RequestBody SubscriptionDto subscriptionDto){
-        System.out.println("le subscriptiondto : " + subscriptionDto);
+    public ResponseEntity<TokenDto> createUser(@RequestBody SubscriptionDto subscriptionDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.createUser(subscriptionDto));
     }
 
     @PostMapping("/forgot-password")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public void getForgotPasswordLink(@RequestBody ResetPasswordMailDto resetPasswordMailDto){
+    public void getForgotPasswordLink(@RequestBody ResetPasswordMailDto resetPasswordMailDto) {
         authService.getForgotPasswordTokenFromMail(resetPasswordMailDto.mail());
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<TokenDto> resetUserPassword(@RequestBody ResetPasswordConfirmDto resetPasswordConfirmDto){
+    public ResponseEntity<TokenDto> resetUserPassword(@RequestBody ResetPasswordConfirmDto resetPasswordConfirmDto) {
         return ResponseEntity.ok(authService.resetUserPassword(resetPasswordConfirmDto));
     }
 
