@@ -1,7 +1,7 @@
 package com.bookNDrive.user_service.exceptions;
 
 
-import com.bookNDrive.user_service.dtos.sended.ErrorResponseDto;
+import com.bookndrive.common.error.ErrorResponseDto;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
