@@ -2,9 +2,9 @@ package com.bookNDrive.user_service.services;
 
 import com.bookNDrive.user_service.dtos.received.PaymentDto;
 import com.bookNDrive.user_service.dtos.sended.UserDto;
+import com.bookNDrive.user_service.entities.User;
 import com.bookNDrive.user_service.exceptions.EntityNotFoundException;
 import com.bookNDrive.user_service.mappers.UserMapper;
-import com.bookNDrive.user_service.models.User;
 import com.bookNDrive.user_service.repositories.UserRepository;
 import com.bookNDrive.user_service.security.JwtUtil;
 import jakarta.transaction.Transactional;

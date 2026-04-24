@@ -1,4 +1,4 @@
-package com.bookNDrive.user_service.models;
+package com.bookNDrive.user_service.entities;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

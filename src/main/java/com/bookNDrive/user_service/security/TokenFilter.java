@@ -1,6 +1,6 @@
 package com.bookNDrive.user_service.security;
 
-import com.bookNDrive.user_service.models.User;
+import com.bookNDrive.user_service.entities.User;
 import com.bookNDrive.user_service.repositories.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
