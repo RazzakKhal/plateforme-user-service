@@ -6,6 +6,7 @@ import com.bookNDrive.user_service.dtos.received.SubscriptionDto;
 import com.bookNDrive.user_service.dtos.sended.ForgotPasswordToken;
 import com.bookNDrive.user_service.dtos.sended.TokenDto;
 import com.bookNDrive.user_service.entities.User;
+import com.bookNDrive.user_service.events.ForgotPasswordTokenCreated;
 import com.bookNDrive.user_service.exceptions.EntityNotFoundException;
 import com.bookNDrive.user_service.exceptions.ExistingEntityException;
 import com.bookNDrive.user_service.exceptions.WrongPasswordException;
@@ -14,6 +15,7 @@ import com.bookNDrive.user_service.interfaces.AuthService;
 import com.bookNDrive.user_service.mappers.UserMapper;
 import com.bookNDrive.user_service.repositories.UserRepository;
 import com.bookNDrive.user_service.security.JwtUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,26 +26,27 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
-    private final KafkaService kafkaService;
     private final UserMapper userMapper;
     private final PasswordHandler passwordHandler;
+    private final OutboxService outboxService;
 
     @Autowired
-    public AuthServiceImpl(UserRepository userRepository, JwtUtil jwtUtil, KafkaService kafkaService, UserMapper userMapper, PasswordHandler passwordHandler) {
+    public AuthServiceImpl(UserRepository userRepository, JwtUtil jwtUtil, UserMapper userMapper, PasswordHandler passwordHandler, OutboxService outboxService) {
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
-        this.kafkaService = kafkaService;
         this.userMapper = userMapper;
         this.passwordHandler = passwordHandler;
+        this.outboxService = outboxService;
     }
 
 
     @Override
-    public void getForgotPasswordTokenFromMail(String mail) {
+    @Transactional
+    public void getForgotPasswordTokenFromMail(String mail) throws JsonProcessingException {
 
         User user = userRepository.findByMail(mail).orElseThrow(() -> new EntityNotFoundException("Ce mail ne correspond à aucun compte existant", "USER_NOT_FOUND", HttpStatus.NOT_FOUND));
         var token = new ForgotPasswordToken(mail, jwtUtil.generateToken(user));
-        kafkaService.sendMessage("send-forgot-password-link-out-0", token);
+        outboxService.saveEventBeforePublishing(new ForgotPasswordTokenCreated(token));
     }
 
     @Override

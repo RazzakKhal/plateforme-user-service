@@ -6,6 +6,7 @@ import com.bookNDrive.user_service.dtos.received.ResetPasswordMailDto;
 import com.bookNDrive.user_service.dtos.received.SubscriptionDto;
 import com.bookNDrive.user_service.dtos.sended.TokenDto;
 import com.bookNDrive.user_service.interfaces.AuthService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.http.HttpStatus;
@@ -50,7 +51,7 @@ public class AuthController {
 
     @PostMapping("/forgot-password")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public void getForgotPasswordLink(@RequestBody ResetPasswordMailDto resetPasswordMailDto) {
+    public void getForgotPasswordLink(@RequestBody ResetPasswordMailDto resetPasswordMailDto) throws JsonProcessingException {
         authService.getForgotPasswordTokenFromMail(resetPasswordMailDto.mail());
     }
 
