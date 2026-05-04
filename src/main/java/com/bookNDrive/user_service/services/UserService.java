@@ -60,15 +60,6 @@ public class UserService {
     }
 
     @Transactional
-    public void updateUserFormula(Long formulaId) {
-        var principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        User user = (User) principal;
-        user.setFormulaId(formulaId);
-        userRepository.save(user);
-    }
-
-    @Transactional
     public void insertFormulaFromKafka(PaymentDto paymentDto) {
 
         var user = userRepository.findById(paymentDto.getUserId()).orElseThrow(() -> new EntityNotFoundException("Cet id ne correspond à aucun compte existant", "USER_NOT_FOUND", HttpStatus.NOT_FOUND));

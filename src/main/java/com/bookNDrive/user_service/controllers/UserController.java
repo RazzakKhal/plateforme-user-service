@@ -6,12 +6,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
@@ -22,9 +24,6 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
-
-    @Value("${test}")
-    String testo;
 
     @Autowired
     public UserController(UserService userService) {
@@ -53,15 +52,4 @@ public class UserController {
     }
 
 
-    @PutMapping("/formula")
-    public ResponseEntity<Void> updateUserFormula(@RequestParam Long formulaId) {
-        userService.updateUserFormula(formulaId);
-        return ResponseEntity.noContent().build();
-    }
-
-
-    @GetMapping("/myenv")
-    public String getEnv() {
-        return testo;
-    }
 }
