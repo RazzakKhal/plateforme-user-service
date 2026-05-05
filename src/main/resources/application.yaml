@@ -46,7 +46,7 @@ spring:
         format_sql: true
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
   datasource:
     url: ${SPRING_DATASOURCE_URL_USER_SERVICE:jdbc:postgresql://localhost:5432/autoecole-user}
     username: ${SPRING_POSTGRES_USERNAME:postgres}
@@ -79,8 +79,6 @@ management:
     tags:
       application: ${spring.application.name}
 
-
-
 eureka:
   instance:
     preferIpAddress: true
@@ -90,8 +88,21 @@ eureka:
     serviceUrl:
       defaultZone: http://localhost:8070/eureka/
 
-
 info:
   app:
     name: "user-service"
     description: "user service microservice"
+
+logging:
+  file:
+    name: ${LOG_FILE_NAME:logs/user-service.log}
+  structured:
+    format:
+      console: ecs
+      file: ecs
+    ecs:
+      service:
+        name: ${spring.application.name}
+        environment: ${SPRING_PROFILES_ACTIVE:local}
+  level:
+    root: INFO
