@@ -8,6 +8,7 @@ import com.bookNDrive.user_service.dtos.sended.TokenDto;
 import com.bookNDrive.user_service.interfaces.AuthService;
 import com.bookndrive.common.error.ErrorResponseDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -53,7 +54,7 @@ public class AuthController {
     @PostMapping("/signin")
     public ResponseEntity<TokenDto> login(
 
-            @RequestBody LoginDto loginDto
+            @Valid @RequestBody LoginDto loginDto
     ) {
         return ResponseEntity.ok(authService.login(loginDto));
     }
@@ -77,7 +78,7 @@ public class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<TokenDto> createUser(
 
-            @RequestBody SubscriptionDto subscriptionDto
+            @Valid @RequestBody SubscriptionDto subscriptionDto
     ) {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.createUser(subscriptionDto));
     }
@@ -101,7 +102,7 @@ public class AuthController {
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void getForgotPasswordLink(
 
-            @RequestBody ResetPasswordMailDto resetPasswordMailDto
+            @Valid @RequestBody ResetPasswordMailDto resetPasswordMailDto
     ) throws JsonProcessingException {
         authService.getForgotPasswordTokenFromMail(resetPasswordMailDto.mail());
     }
@@ -123,7 +124,7 @@ public class AuthController {
             )
     })
     @PostMapping("/reset-password")
-    public ResponseEntity<TokenDto> resetUserPassword(@RequestBody ResetPasswordConfirmDto resetPasswordConfirmDto
+    public ResponseEntity<TokenDto> resetUserPassword(@Valid @RequestBody ResetPasswordConfirmDto resetPasswordConfirmDto
     ) {
         return ResponseEntity.ok(authService.resetUserPassword(resetPasswordConfirmDto));
     }

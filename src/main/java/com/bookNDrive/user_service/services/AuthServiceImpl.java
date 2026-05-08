@@ -9,6 +9,7 @@ import com.bookNDrive.user_service.entities.User;
 import com.bookNDrive.user_service.events.ForgotPasswordTokenCreated;
 import com.bookNDrive.user_service.exceptions.EntityNotFoundException;
 import com.bookNDrive.user_service.exceptions.ExistingEntityException;
+import com.bookNDrive.user_service.exceptions.InvalidTokenException;
 import com.bookNDrive.user_service.exceptions.WrongPasswordException;
 import com.bookNDrive.user_service.handlers.PasswordHandler;
 import com.bookNDrive.user_service.interfaces.AuthService;
@@ -39,12 +40,15 @@ public class AuthServiceImpl implements AuthService {
         this.outboxService = outboxService;
     }
 
-
     @Override
     @Transactional
     public void getForgotPasswordTokenFromMail(String mail) throws JsonProcessingException {
-
-        User user = userRepository.findByMail(mail).orElseThrow(() -> new EntityNotFoundException("Ce mail ne correspond à aucun compte existant", "USER_NOT_FOUND", HttpStatus.NOT_FOUND));
+        User user = userRepository.findByMail(mail)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Ce mail ne correspond à aucun compte existant",
+                        "USER_NOT_FOUND",
+                        HttpStatus.NOT_FOUND
+                ));
         var token = new ForgotPasswordToken(mail, jwtUtil.generateToken(user));
         outboxService.saveEventBeforePublishing(new ForgotPasswordTokenCreated(token));
     }
@@ -52,44 +56,65 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public TokenDto resetUserPassword(ResetPasswordConfirmDto resetPasswordConfirmDto) {
+        String mailFromToken;
+        try {
+            mailFromToken = jwtUtil.extractUsername(resetPasswordConfirmDto.token());
+        } catch (Exception ex) {
+            throw new InvalidTokenException(
+                    "Le token de reinitialisation est invalide",
+                    "INVALID_RESET_PASSWORD_TOKEN",
+                    HttpStatus.UNAUTHORIZED
+            );
+        }
 
-        var user = userRepository.findByMail(
-                jwtUtil.extractUsername(resetPasswordConfirmDto.token())
-        ).orElseThrow(() -> new EntityNotFoundException("Ce mail ne correspond à aucun compte existant", "USER_NOT_FOUND", HttpStatus.NOT_FOUND));
+        var user = userRepository.findByMail(mailFromToken)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Ce mail ne correspond à aucun compte existant",
+                        "USER_NOT_FOUND",
+                        HttpStatus.NOT_FOUND
+                ));
 
         user.setPassword(passwordHandler.encodePassword(resetPasswordConfirmDto.password()));
         userRepository.save(user);
 
         return new TokenDto(user.getMail(), user.getAuthorities().toString(), jwtUtil.generateToken(user));
-
     }
 
     @Override
     @Transactional
     public TokenDto createUser(SubscriptionDto subscriptionDto) {
-
         userRepository.findByMail(subscriptionDto.getMail())
                 .ifPresent(user -> {
-                    throw new ExistingEntityException("l'utilisateur existe déjà en base", "USER_ALREADY_EXIST", HttpStatus.BAD_REQUEST);
+                    throw new ExistingEntityException(
+                            "L'utilisateur existe déjà en base",
+                            "USER_ALREADY_EXIST",
+                            HttpStatus.BAD_REQUEST
+                    );
                 });
 
         subscriptionDto.setPassword(passwordHandler.encodePassword(subscriptionDto.getPassword()));
         var user = userRepository.save(userMapper.subscriptionDtoToUser(subscriptionDto));
         String token = jwtUtil.generateToken(user);
         return new TokenDto(user.getMail(), user.getAuthorities().toString(), token);
-
     }
 
     @Override
     @Transactional
     public TokenDto login(LoginDto loginDto) {
-        var user = userRepository.findByMail(loginDto.getMail()).orElseThrow(() -> new EntityNotFoundException("Ce mail ne correspond à aucun compte existant", "USER_NOT_FOUND", HttpStatus.NOT_FOUND));
+        var user = userRepository.findByMail(loginDto.getMail())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Ce mail ne correspond à aucun compte existant",
+                        "USER_NOT_FOUND",
+                        HttpStatus.NOT_FOUND
+                ));
         if (!passwordHandler.verifyPassword(loginDto.getPassword(), user.getPassword())) {
-            throw new WrongPasswordException("Connexion impossible, veuillez vérifier vos informations de connexion et réessayer", "WRONG_CREDENTIALS", HttpStatus.UNAUTHORIZED);
+            throw new WrongPasswordException(
+                    "Connexion impossible, veuillez verifier vos informations de connexion et reessayer",
+                    "WRONG_CREDENTIALS",
+                    HttpStatus.UNAUTHORIZED
+            );
         }
         String token = jwtUtil.generateToken(user);
         return new TokenDto(user.getMail(), user.getAuthorities().toString(), token);
     }
-
-
 }
