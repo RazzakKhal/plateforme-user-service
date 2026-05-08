@@ -10,6 +10,7 @@ import com.bookNDrive.user_service.events.ForgotPasswordTokenCreated;
 import com.bookNDrive.user_service.exceptions.EntityNotFoundException;
 import com.bookNDrive.user_service.exceptions.ExistingEntityException;
 import com.bookNDrive.user_service.exceptions.InvalidTokenException;
+import com.bookNDrive.user_service.exceptions.UserErrorCodes;
 import com.bookNDrive.user_service.exceptions.WrongPasswordException;
 import com.bookNDrive.user_service.handlers.PasswordHandler;
 import com.bookNDrive.user_service.interfaces.AuthService;
@@ -46,7 +47,7 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByMail(mail)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Ce mail ne correspond à aucun compte existant",
-                        "USER_NOT_FOUND",
+                        UserErrorCodes.USER_NOT_FOUND,
                         HttpStatus.NOT_FOUND
                 ));
         var token = new ForgotPasswordToken(mail, jwtUtil.generateToken(user));
@@ -62,7 +63,7 @@ public class AuthServiceImpl implements AuthService {
         } catch (Exception ex) {
             throw new InvalidTokenException(
                     "Le token de reinitialisation est invalide",
-                    "INVALID_RESET_PASSWORD_TOKEN",
+                    UserErrorCodes.INVALID_RESET_PASSWORD_TOKEN,
                     HttpStatus.UNAUTHORIZED
             );
         }
@@ -70,7 +71,7 @@ public class AuthServiceImpl implements AuthService {
         var user = userRepository.findByMail(mailFromToken)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Ce mail ne correspond à aucun compte existant",
-                        "USER_NOT_FOUND",
+                        UserErrorCodes.USER_NOT_FOUND,
                         HttpStatus.NOT_FOUND
                 ));
 
@@ -87,7 +88,7 @@ public class AuthServiceImpl implements AuthService {
                 .ifPresent(user -> {
                     throw new ExistingEntityException(
                             "L'utilisateur existe déjà en base",
-                            "USER_ALREADY_EXIST",
+                            UserErrorCodes.USER_ALREADY_EXIST,
                             HttpStatus.BAD_REQUEST
                     );
                 });
@@ -104,13 +105,13 @@ public class AuthServiceImpl implements AuthService {
         var user = userRepository.findByMail(loginDto.getMail())
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Ce mail ne correspond à aucun compte existant",
-                        "USER_NOT_FOUND",
+                        UserErrorCodes.USER_NOT_FOUND,
                         HttpStatus.NOT_FOUND
                 ));
         if (!passwordHandler.verifyPassword(loginDto.getPassword(), user.getPassword())) {
             throw new WrongPasswordException(
                     "Connexion impossible, veuillez verifier vos informations de connexion et reessayer",
-                    "WRONG_CREDENTIALS",
+                    UserErrorCodes.WRONG_CREDENTIALS,
                     HttpStatus.UNAUTHORIZED
             );
         }

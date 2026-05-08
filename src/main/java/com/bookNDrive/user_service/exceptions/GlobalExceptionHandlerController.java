@@ -1,6 +1,7 @@
 package com.bookNDrive.user_service.exceptions;
 
 import com.bookndrive.common.error.ApiException;
+import com.bookndrive.common.error.CommonErrorCodes;
 import com.bookndrive.common.error.ErrorResponseDto;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
@@ -39,7 +40,7 @@ class GlobalExceptionHandlerController {
                 .collect(Collectors.joining(", "));
 
         return ResponseEntity.badRequest()
-                .body(new ErrorResponseDto("VALIDATION_ERROR", message, HttpStatus.BAD_REQUEST.value()));
+                .body(new ErrorResponseDto(CommonErrorCodes.VALIDATION_ERROR, message, HttpStatus.BAD_REQUEST.value()));
     }
 
     @ExceptionHandler({
@@ -51,13 +52,13 @@ class GlobalExceptionHandlerController {
     })
     public ResponseEntity<ErrorResponseDto> handleBadRequest(Exception ex) {
         return ResponseEntity.badRequest()
-                .body(new ErrorResponseDto("BAD_REQUEST", ex.getMessage(), HttpStatus.BAD_REQUEST.value()));
+                .body(new ErrorResponseDto(CommonErrorCodes.BAD_REQUEST, ex.getMessage(), HttpStatus.BAD_REQUEST.value()));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponseDto> handleAccessDeniedException(AccessDeniedException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(new ErrorResponseDto("ACCESS_DENIED", "Acces refuse", HttpStatus.FORBIDDEN.value()));
+                .body(new ErrorResponseDto(CommonErrorCodes.ACCESS_DENIED, "Acces refuse", HttpStatus.FORBIDDEN.value()));
     }
 
     @ExceptionHandler(Exception.class)
@@ -65,7 +66,7 @@ class GlobalExceptionHandlerController {
         LOGGER.error("Unhandled exception in user-service", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ErrorResponseDto(
-                        "INTERNAL_SERVER_ERROR",
+                        CommonErrorCodes.INTERNAL_SERVER_ERROR,
                         "Une erreur interne est survenue",
                         HttpStatus.INTERNAL_SERVER_ERROR.value()
                 ));

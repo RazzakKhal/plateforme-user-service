@@ -5,6 +5,7 @@ import com.bookNDrive.user_service.dtos.sended.UserDto;
 import com.bookNDrive.user_service.entities.User;
 import com.bookNDrive.user_service.exceptions.EntityNotFoundException;
 import com.bookNDrive.user_service.exceptions.InvalidTokenException;
+import com.bookNDrive.user_service.exceptions.UserErrorCodes;
 import com.bookNDrive.user_service.mappers.UserMapper;
 import com.bookNDrive.user_service.repositories.UserRepository;
 import com.bookNDrive.user_service.security.JwtUtil;
@@ -37,7 +38,7 @@ public class UserService {
         var user = userRepository.findByMail(((User) authentication.getPrincipal()).getMail())
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Ce mail ne correspond à aucun compte existant",
-                        "USER_NOT_FOUND",
+                        UserErrorCodes.USER_NOT_FOUND,
                         HttpStatus.NOT_FOUND
                 ));
         user.getAdress().getAdressLine1();
@@ -57,10 +58,10 @@ public class UserService {
                 }
             }
         } catch (Exception ex) {
-            throw new InvalidTokenException("Le token fourni est invalide", "INVALID_TOKEN", HttpStatus.UNAUTHORIZED);
+            throw new InvalidTokenException("Le token fourni est invalide", UserErrorCodes.INVALID_TOKEN, HttpStatus.UNAUTHORIZED);
         }
 
-        throw new InvalidTokenException("Le token fourni est invalide", "INVALID_TOKEN", HttpStatus.UNAUTHORIZED);
+        throw new InvalidTokenException("Le token fourni est invalide", UserErrorCodes.INVALID_TOKEN, HttpStatus.UNAUTHORIZED);
     }
 
     @Transactional
@@ -68,7 +69,7 @@ public class UserService {
         var user = userRepository.findById(paymentDto.getUserId())
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Cet id ne correspond à aucun compte existant",
-                        "USER_NOT_FOUND",
+                        UserErrorCodes.USER_NOT_FOUND,
                         HttpStatus.NOT_FOUND
                 ));
         user.setFormulaId(paymentDto.getFormulaId());
