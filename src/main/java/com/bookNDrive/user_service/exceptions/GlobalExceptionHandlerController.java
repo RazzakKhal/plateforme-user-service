@@ -3,6 +3,7 @@ package com.bookNDrive.user_service.exceptions;
 import com.bookndrive.common.error.ApiException;
 import com.bookndrive.common.error.CommonErrorCodes;
 import com.bookndrive.common.error.ErrorResponseDto;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,18 +27,26 @@ class GlobalExceptionHandlerController {
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandlerController.class);
 
     @ExceptionHandler(ApiException.class)
-    public ResponseEntity<ErrorResponseDto> handleApiException(ApiException ex) {
+    public ResponseEntity<ErrorResponseDto> handleApiException(ApiException ex, HttpServletRequest request) {
+        LOGGER.warn(
+                "Handled API exception path={} status={} errorCode={} message={}",
+                request.getRequestURI(),
+                ex.getStatus(),
+                ex.getErrorCode(),
+                ex.getMessage()
+        );
         return ResponseEntity.status(ex.getStatus())
                 .body(new ErrorResponseDto(ex.getErrorCode(), ex.getMessage(), ex.getStatus()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponseDto> handleValidationException(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ErrorResponseDto> handleValidationException(MethodArgumentNotValidException ex, HttpServletRequest request) {
         String message = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
                 .map(this::formatFieldError)
                 .collect(Collectors.joining(", "));
+        LOGGER.warn("Handled validation exception path={} message={}", request.getRequestURI(), message);
 
         return ResponseEntity.badRequest()
                 .body(new ErrorResponseDto(CommonErrorCodes.VALIDATION_ERROR, message, HttpStatus.BAD_REQUEST.value()));
@@ -50,20 +59,22 @@ class GlobalExceptionHandlerController {
             MissingRequestHeaderException.class,
             MethodArgumentTypeMismatchException.class
     })
-    public ResponseEntity<ErrorResponseDto> handleBadRequest(Exception ex) {
+    public ResponseEntity<ErrorResponseDto> handleBadRequest(Exception ex, HttpServletRequest request) {
+        LOGGER.warn("Handled bad request path={} message={}", request.getRequestURI(), ex.getMessage());
         return ResponseEntity.badRequest()
                 .body(new ErrorResponseDto(CommonErrorCodes.BAD_REQUEST, ex.getMessage(), HttpStatus.BAD_REQUEST.value()));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ErrorResponseDto> handleAccessDeniedException(AccessDeniedException ex) {
+    public ResponseEntity<ErrorResponseDto> handleAccessDeniedException(AccessDeniedException ex, HttpServletRequest request) {
+        LOGGER.warn("Handled access denied path={}", request.getRequestURI());
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(new ErrorResponseDto(CommonErrorCodes.ACCESS_DENIED, "Acces refuse", HttpStatus.FORBIDDEN.value()));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponseDto> globalException(Exception ex) {
-        LOGGER.error("Unhandled exception in user-service", ex);
+    public ResponseEntity<ErrorResponseDto> globalException(Exception ex, HttpServletRequest request) {
+        LOGGER.error("Unhandled exception in user-service path={}", request.getRequestURI(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ErrorResponseDto(
                         CommonErrorCodes.INTERNAL_SERVER_ERROR,

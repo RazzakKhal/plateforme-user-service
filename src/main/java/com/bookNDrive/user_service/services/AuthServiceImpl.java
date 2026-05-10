@@ -17,13 +17,16 @@ import com.bookNDrive.user_service.interfaces.AuthService;
 import com.bookNDrive.user_service.mappers.UserMapper;
 import com.bookNDrive.user_service.repositories.UserRepository;
 import com.bookNDrive.user_service.security.JwtUtil;
+import com.bookndrive.common.util.SensitiveDataMasker;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
@@ -33,7 +36,13 @@ public class AuthServiceImpl implements AuthService {
     private final OutboxService outboxService;
 
     @Autowired
-    public AuthServiceImpl(UserRepository userRepository, JwtUtil jwtUtil, UserMapper userMapper, PasswordHandler passwordHandler, OutboxService outboxService) {
+    public AuthServiceImpl(
+            UserRepository userRepository,
+            JwtUtil jwtUtil,
+            UserMapper userMapper,
+            PasswordHandler passwordHandler,
+            OutboxService outboxService
+    ) {
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
         this.userMapper = userMapper;
@@ -44,23 +53,31 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public void getForgotPasswordTokenFromMail(String mail) throws JsonProcessingException {
+        String maskedMail = SensitiveDataMasker.maskEmail(mail);
+        log.info("Demande de lien de reinitialisation recue mail={}", maskedMail);
         User user = userRepository.findByMail(mail)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Ce mail ne correspond à aucun compte existant",
-                        UserErrorCodes.USER_NOT_FOUND,
-                        HttpStatus.NOT_FOUND
-                ));
+                .orElseThrow(() -> {
+                    log.warn("Demande de lien de reinitialisation impossible, utilisateur introuvable mail={}", maskedMail);
+                    return new EntityNotFoundException(
+                            "Ce mail ne correspond a aucun compte existant",
+                            UserErrorCodes.USER_NOT_FOUND,
+                            HttpStatus.NOT_FOUND
+                    );
+                });
         var token = new ForgotPasswordToken(mail, jwtUtil.generateToken(user));
         outboxService.saveEventBeforePublishing(new ForgotPasswordTokenCreated(token));
+        log.info("Evenement de reinitialisation cree mail={}", maskedMail);
     }
 
     @Override
     @Transactional
     public TokenDto resetUserPassword(ResetPasswordConfirmDto resetPasswordConfirmDto) {
+        log.info("Demande de reinitialisation de mot de passe recue");
         String mailFromToken;
         try {
             mailFromToken = jwtUtil.extractUsername(resetPasswordConfirmDto.token());
         } catch (Exception ex) {
+            log.warn("Echec de reinitialisation, token invalide");
             throw new InvalidTokenException(
                     "Le token de reinitialisation est invalide",
                     UserErrorCodes.INVALID_RESET_PASSWORD_TOKEN,
@@ -69,14 +86,21 @@ public class AuthServiceImpl implements AuthService {
         }
 
         var user = userRepository.findByMail(mailFromToken)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Ce mail ne correspond à aucun compte existant",
-                        UserErrorCodes.USER_NOT_FOUND,
-                        HttpStatus.NOT_FOUND
-                ));
+                .orElseThrow(() -> {
+                    log.warn(
+                            "Echec de reinitialisation, utilisateur introuvable mail={}",
+                            SensitiveDataMasker.maskEmail(mailFromToken)
+                    );
+                    return new EntityNotFoundException(
+                            "Ce mail ne correspond a aucun compte existant",
+                            UserErrorCodes.USER_NOT_FOUND,
+                            HttpStatus.NOT_FOUND
+                    );
+                });
 
         user.setPassword(passwordHandler.encodePassword(resetPasswordConfirmDto.password()));
         userRepository.save(user);
+        log.info("Mot de passe reinitialise mail={}", SensitiveDataMasker.maskEmail(user.getMail()));
 
         return new TokenDto(user.getMail(), user.getAuthorities().toString(), jwtUtil.generateToken(user));
     }
@@ -84,10 +108,13 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public TokenDto createUser(SubscriptionDto subscriptionDto) {
+        String maskedMail = SensitiveDataMasker.maskEmail(subscriptionDto.getMail());
+        log.info("Creation de compte demandee mail={}", maskedMail);
         userRepository.findByMail(subscriptionDto.getMail())
                 .ifPresent(user -> {
+                    log.warn("Creation de compte refusee, utilisateur deja existant mail={}", maskedMail);
                     throw new ExistingEntityException(
-                            "L'utilisateur existe déjà en base",
+                            "L'utilisateur existe deja en base",
                             UserErrorCodes.USER_ALREADY_EXIST,
                             HttpStatus.BAD_REQUEST
                     );
@@ -96,19 +123,26 @@ public class AuthServiceImpl implements AuthService {
         subscriptionDto.setPassword(passwordHandler.encodePassword(subscriptionDto.getPassword()));
         var user = userRepository.save(userMapper.subscriptionDtoToUser(subscriptionDto));
         String token = jwtUtil.generateToken(user);
+        log.info("Compte cree userId={} mail={}", user.getId(), maskedMail);
         return new TokenDto(user.getMail(), user.getAuthorities().toString(), token);
     }
 
     @Override
     @Transactional
     public TokenDto login(LoginDto loginDto) {
+        String maskedMail = SensitiveDataMasker.maskEmail(loginDto.getMail());
+        log.info("Tentative de connexion mail={}", maskedMail);
         var user = userRepository.findByMail(loginDto.getMail())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Ce mail ne correspond à aucun compte existant",
-                        UserErrorCodes.USER_NOT_FOUND,
-                        HttpStatus.NOT_FOUND
-                ));
+                .orElseThrow(() -> {
+                    log.warn("Connexion refusee, utilisateur introuvable mail={}", maskedMail);
+                    return new EntityNotFoundException(
+                            "Ce mail ne correspond a aucun compte existant",
+                            UserErrorCodes.USER_NOT_FOUND,
+                            HttpStatus.NOT_FOUND
+                    );
+                });
         if (!passwordHandler.verifyPassword(loginDto.getPassword(), user.getPassword())) {
+            log.warn("Connexion refusee, mot de passe invalide mail={}", maskedMail);
             throw new WrongPasswordException(
                     "Connexion impossible, veuillez verifier vos informations de connexion et reessayer",
                     UserErrorCodes.WRONG_CREDENTIALS,
@@ -116,6 +150,7 @@ public class AuthServiceImpl implements AuthService {
             );
         }
         String token = jwtUtil.generateToken(user);
+        log.info("Connexion reussie userId={} mail={}", user.getId(), maskedMail);
         return new TokenDto(user.getMail(), user.getAuthorities().toString(), token);
     }
 }
