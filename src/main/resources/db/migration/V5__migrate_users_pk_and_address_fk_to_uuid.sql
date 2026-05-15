@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS user_id_map
 DO $$
 DECLARE
     fk_record RECORD;
+    formula_id_data_type TEXT;
 BEGIN
     IF to_regclass('public.users') IS NULL THEN
         RETURN;
@@ -68,16 +69,29 @@ BEGIN
           AND column_name = 'formula_id'
           AND data_type <> 'uuid'
     ) THEN
-        IF to_regclass('public.formula_id_map') IS NULL THEN
-            RAISE EXCEPTION 'Missing formula_id_map required to migrate users.formula_id to UUID';
-        END IF;
-
         ALTER TABLE users ADD COLUMN IF NOT EXISTS new_formula_id UUID;
-        UPDATE users u
-        SET new_formula_id = f.id
-        FROM formula_id_map f
-        WHERE u.formula_id IS NOT NULL
-          AND u.formula_id = f.legacy_id;
+
+        SELECT data_type
+        INTO formula_id_data_type
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'users'
+          AND column_name = 'formula_id';
+
+        IF to_regclass('public.formula_id_map') IS NOT NULL THEN
+            UPDATE users u
+            SET new_formula_id = f.id
+            FROM formula_id_map f
+            WHERE u.formula_id IS NOT NULL
+              AND u.formula_id = f.legacy_id;
+        ELSIF formula_id_data_type IN ('character varying', 'character', 'text') THEN
+            UPDATE users
+            SET new_formula_id = NULLIF(BTRIM(formula_id::TEXT), '')::UUID
+            WHERE formula_id IS NOT NULL
+              AND BTRIM(formula_id::TEXT) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$';
+        ELSE
+            RAISE NOTICE 'Skipping legacy users.formula_id backfill because formula_id_map is unavailable in user-service database';
+        END IF;
     END IF;
 
     IF EXISTS (
