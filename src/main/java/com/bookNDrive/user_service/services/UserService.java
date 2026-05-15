@@ -49,7 +49,7 @@ public class UserService {
                             HttpStatus.NOT_FOUND
                     );
                 });
-        user.getAdress().getAdressLine1();
+        user.getAddress().getAddressLine1();
         log.info("Profil courant recupere userId={}", user.getId());
         return userMapper.userToUserDto(user);
     }

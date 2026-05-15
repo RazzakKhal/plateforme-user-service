@@ -3,26 +3,22 @@ package com.bookNDrive.user_service.mappers;
 import com.bookNDrive.user_service.dtos.received.AddressDto;
 import com.bookNDrive.user_service.dtos.received.SubscriptionDto;
 import com.bookNDrive.user_service.dtos.sended.UserDto;
-import com.bookNDrive.user_service.entities.Adress;
+import com.bookNDrive.user_service.entities.Address;
 import com.bookNDrive.user_service.entities.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
-
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
     UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
 
-    @Mapping(source = "address", target = "adress")
+    @Mapping(target = "id", ignore = true)
     User subscriptionDtoToUser(SubscriptionDto subscriptionDto);
 
-    Adress toAdress(AddressDto dto);
+    @Mapping(target = "id", ignore = true)
+    Address toAddress(AddressDto dto);
 
-    @Mapping(source = "adress", target = "address")
-    @Mapping(target = "id", ignore = false)
-        // facultatif aussi
     UserDto userToUserDto(User user);
-
 }

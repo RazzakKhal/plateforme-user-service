@@ -9,15 +9,15 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @Data
-public class BaseEntity {
+public abstract class BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private UUID id;
 
     @LastModifiedBy
     @Column(insertable = false)
@@ -35,5 +35,11 @@ public class BaseEntity {
     @Column(insertable = false)
     private LocalDateTime updatedAt;
 
+    @PrePersist
+    protected void assignIdIfMissing() {
+        if (id == null) {
+            id = UUID.randomUUID();
+        }
+    }
 
 }

@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -51,16 +52,16 @@ public class User extends BaseEntity implements UserDetails {
     private String phone;
     @Schema(
             name = "formulaId",
-            example = "123456"
+            example = "0d7e0d35-1c03-4690-a3fd-1f7fdf4bc0ef"
     )
-    private Long formulaId;
+    private UUID formulaId;
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
     private Set<Role> roles = new HashSet<>();
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "adress_id")
-    private Adress adress;
+    @JoinColumn(name = "address_id")
+    private Address address;
 
     public User() {
         this.roles.add(Role.ROLE_USER);
