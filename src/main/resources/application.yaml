@@ -30,7 +30,7 @@ spring:
     import: "optional:configserver:http://localhost:8071/"
   profiles:
     active:
-      - "prod"
+      - "dev"
   application:
     name: user-service
   jpa:
@@ -106,3 +106,12 @@ logging:
         environment: ${SPRING_PROFILES_ACTIVE:local}
   level:
     root: INFO
+    # Kafka client: uniquement erreurs
+    org.apache.kafka: ERROR
+
+    # Spring Kafka
+    org.springframework.kafka: ERROR
+
+    # Spring Cloud Stream Kafka binder
+    org.springframework.cloud.stream: ERROR
+    org.springframework.cloud.stream.binder.kafka: ERROR
