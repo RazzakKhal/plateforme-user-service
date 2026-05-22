@@ -1,26 +1,26 @@
 package com.bookNDrive.user_service.handlers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
-public class PasswordHandlerImpl implements PasswordHandler{
+public class PasswordHandlerImpl implements PasswordHandler {
 
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public PasswordHandlerImpl(BCryptPasswordEncoder bCryptPasswordEncoder) {
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+    public PasswordHandlerImpl(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public String encodePassword(String password) {
-        return bCryptPasswordEncoder.encode(password);
+        return passwordEncoder.encode(password);
     }
 
     @Override
     public boolean verifyPassword(String clearPassword, String encodePassword) {
-        return bCryptPasswordEncoder.matches(clearPassword, encodePassword);
+        return passwordEncoder.matches(clearPassword, encodePassword);
     }
 }
