@@ -1,9 +1,11 @@
 package com.bookNDrive.user_service.services;
 
 import com.bookNDrive.user_service.dtos.received.PaymentDto;
+import com.bookNDrive.user_service.dtos.received.UserRequest;
 import com.bookNDrive.user_service.dtos.sended.UserDto;
 import com.bookNDrive.user_service.entities.User;
 import com.bookNDrive.user_service.exceptions.EntityNotFoundException;
+import com.bookNDrive.user_service.exceptions.ErrorsMessages;
 import com.bookNDrive.user_service.exceptions.InvalidTokenException;
 import com.bookNDrive.user_service.exceptions.UserErrorCodes;
 import com.bookNDrive.user_service.mappers.UserMapper;
@@ -52,6 +54,25 @@ public class UserService {
         user.getAddress().getAddressLine1();
         log.info("Profil courant recupere userId={}", user.getId());
         return userMapper.userToUserDto(user);
+    }
+
+    @Transactional
+    public UserDto updateMe(UserRequest userRequest, Authentication authentication) {
+        var authenticatedUser = userRepository.findByMail(authentication.getName()).orElseThrow(
+                () -> new EntityNotFoundException(ErrorsMessages.USER_NOT_FOUND, UserErrorCodes.USER_NOT_FOUND, HttpStatus.NOT_FOUND)
+        );
+        authenticatedUser.setLastname(userRequest.lastname());
+        authenticatedUser.setFirstname(userRequest.firstname());
+        authenticatedUser.setPhone(userRequest.phone());
+
+        var userAddress = authenticatedUser.getAddress();
+        userAddress.setAddressLine1(userRequest.address().getAddressLine1());
+        userAddress.setCity(userRequest.address().getCity());
+        userAddress.setCountry(userRequest.address().getCountry());
+        userAddress.setPostalCode(userRequest.address().getPostalCode());
+
+        return userMapper.userToUserDto(authenticatedUser);
+
     }
 
     public Map<String, String> validateToken(String token) {

@@ -1,9 +1,9 @@
 package com.bookNDrive.user_service.controllers;
 
+import com.bookNDrive.user_service.dtos.received.UserRequest;
 import com.bookNDrive.user_service.dtos.sended.UserDto;
 import com.bookNDrive.user_service.services.UserService;
 import com.bookndrive.common.error.ErrorResponseDto;
-import jakarta.validation.constraints.NotBlank;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -11,16 +11,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -63,6 +62,30 @@ public class UserController {
     public ResponseEntity<UserDto> getUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return ResponseEntity.ok(userService.getUser(authentication));
+    }
+
+    @Operation(
+            summary = "l'utilisateur modifie ses informations",
+            description = "l'utilisateur peut tout modifier sauf mail et metadata"
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Profil utilisateur retourne avec succes",
+                            content = @Content(schema = @Schema(implementation = UserDto.class))
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "Utilisateur introuvable",
+                            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+                    )
+            }
+    )
+    @PutMapping("/me")
+    public ResponseEntity<UserDto> updateUser(@Valid @RequestBody UserRequest userRequest, Authentication authentication) {
+        return ResponseEntity.ok(userService.updateMe(userRequest, authentication));
+
     }
 
     @Operation(
