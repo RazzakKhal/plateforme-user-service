@@ -16,12 +16,13 @@ public class MessageFunctions {
     public Consumer<PaymentDto> saveFormula(UserService userService) {
         return paymentDto -> {
             log.info(
-                    "Message Kafka recu pour l'association formule userId={} formulaId={} status={}",
+                    "Message Kafka recu pour l'association formule userId={} formulaId={} status={} reference={}",
                     paymentDto.getUserId(),
                     paymentDto.getFormulaId(),
-                    paymentDto.getStatus()
+                    paymentDto.getStatus(),
+                    paymentDto.getReference()
             );
-            userService.insertFormulaFromKafka(paymentDto);
+            userService.saveFormulaFromKafka(paymentDto);
         };
     }
 }

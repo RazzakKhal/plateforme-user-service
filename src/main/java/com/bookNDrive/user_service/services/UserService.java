@@ -4,6 +4,7 @@ import com.bookNDrive.user_service.dtos.received.PaymentDto;
 import com.bookNDrive.user_service.dtos.received.UserRequest;
 import com.bookNDrive.user_service.dtos.sended.UserDto;
 import com.bookNDrive.user_service.entities.User;
+import com.bookNDrive.user_service.events.FormulaSavedEvent;
 import com.bookNDrive.user_service.exceptions.EntityNotFoundException;
 import com.bookNDrive.user_service.exceptions.ErrorsMessages;
 import com.bookNDrive.user_service.exceptions.InvalidTokenException;
@@ -12,6 +13,7 @@ import com.bookNDrive.user_service.mappers.UserMapper;
 import com.bookNDrive.user_service.repositories.UserRepository;
 import com.bookNDrive.user_service.security.JwtUtil;
 import com.bookndrive.common.util.SensitiveDataMasker;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,12 +32,19 @@ public class UserService {
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
     private final UserMapper userMapper;
+    private final OutboxService outboxService;
 
     @Autowired
-    public UserService(UserRepository userRepository, JwtUtil jwtUtil, UserMapper userMapper) {
+    public UserService(
+            UserRepository userRepository,
+            JwtUtil jwtUtil,
+            UserMapper userMapper,
+            OutboxService outboxService
+    ) {
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
         this.userMapper = userMapper;
+        this.outboxService = outboxService;
     }
 
     @Transactional
@@ -118,5 +127,19 @@ public class UserService {
         user.setFormulaId(paymentDto.getFormulaId());
         userRepository.save(user);
         log.info("Formule associee a l'utilisateur userId={} formulaId={}", user.getId(), paymentDto.getFormulaId());
+    }
+
+    @Transactional
+    public void saveFormulaFromKafka(PaymentDto paymentDto) {
+        insertFormulaFromKafka(paymentDto);
+        try {
+            outboxService.saveEventBeforePublishing(new FormulaSavedEvent(paymentDto.getReference()));
+            log.info("Evenement FormulaSavedEvent cree reference={}", paymentDto.getReference());
+        } catch (JsonProcessingException ex) {
+            throw new IllegalStateException(
+                    "Impossible de serialiser FormulaSavedEvent pour la reference " + paymentDto.getReference(),
+                    ex
+            );
+        }
     }
 }

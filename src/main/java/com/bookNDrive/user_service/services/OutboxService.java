@@ -5,6 +5,7 @@ import com.bookNDrive.user_service.enums.EventDestination;
 import com.bookNDrive.user_service.enums.EventPublishStatus;
 import com.bookNDrive.user_service.events.Event;
 import com.bookNDrive.user_service.events.ForgotPasswordTokenCreated;
+import com.bookNDrive.user_service.events.FormulaSavedEvent;
 import com.bookNDrive.user_service.exceptions.ErrorsMessages;
 import com.bookNDrive.user_service.repositories.OutboxRepository;
 import com.bookndrive.common.util.SensitiveDataMasker;
@@ -102,6 +103,23 @@ public class OutboxService {
             return kafkaService.sendMessage(
                     EventDestination.SEND_FORGOT_PASSWORD_LINK.getDestination(),
                     event.token()
+            );
+        }
+        if (FormulaSavedEvent.class.getName().equals(outbox.getEventName())) {
+            var event = objectMapper.readValue(
+                    outbox.getPayload(),
+                    FormulaSavedEvent.class
+            );
+
+            log.info(
+                    "Publication Kafka demandee outboxId={} destination={} reference={}",
+                    outbox.getId(),
+                    EventDestination.SEND_FORMULA_SAVED.getDestination(),
+                    event.reference()
+            );
+            return kafkaService.sendMessage(
+                    EventDestination.SEND_FORMULA_SAVED.getDestination(),
+                    event
             );
         }
 
