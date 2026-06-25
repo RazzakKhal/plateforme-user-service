@@ -3,6 +3,7 @@ package com.bookNDrive.user_service.entities;
 import com.bookNDrive.user_service.enums.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.security.core.GrantedAuthority;
@@ -14,6 +15,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
